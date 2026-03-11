@@ -149,6 +149,7 @@ def dashboard_page():
     stud_df = st.session_state.students_df
     serv_df = st.session_state.servers_df
     team_df = st.session_state.team_df
+    tasks_df = st.session_state.project_tasks_df
 
     c1, c2, c3, c4 = st.columns(4)
     with c1: st.markdown(create_glass_metric("Total Research Projects", len(proj_df), "🔬", "#3B82F6"), unsafe_allow_html=True)
@@ -158,7 +159,7 @@ def dashboard_page():
 
     st.markdown("<br>", unsafe_allow_html=True)
     
-    tab_overview, tab_projects, tab_servers = st.tabs(["🌐 Master Overview", "🔬 Projects Analytics", "🖥️ Server Metrics"])
+    tab_overview, tab_projects, tab_servers, tab_team = st.tabs(["🌐 Master Overview", "🔬 Projects Analytics", "🖥️ Server Metrics", "🎓 Team & Students"])
     
     with tab_overview:
         col_plot3, col_plot4 = st.columns(2)
@@ -189,7 +190,6 @@ def dashboard_page():
         with col_plot4:
             st.markdown("<div class='glass-card'>", unsafe_allow_html=True)
             st.markdown("### ⚡ Global Execution Task Status")
-            tasks_df = st.session_state.project_tasks_df
             if not tasks_df.empty and 'STATUS' in tasks_df.columns:
                 fig4 = px.pie(tasks_df, names='STATUS', hole=0.5,
                              color='STATUS', color_discrete_map={'Running': '#3B82F6', 'Queued': '#F59E0B', 'Completed': '#10B981', 'Failed': '#EF4444'},
@@ -200,12 +200,21 @@ def dashboard_page():
             else:
                 st.info("Awaiting project task status data.")
             st.markdown("</div>", unsafe_allow_html=True)
+            
+        st.markdown("<div class='glass-card'>", unsafe_allow_html=True)
+        st.markdown("### 📊 Overall Project Status")
+        if not proj_df.empty and 'STATUS' in proj_df.columns:
+            fig_stat = px.pie(proj_df, names='STATUS', template="plotly_dark" if st.get_option("theme.base") == "dark" else "plotly_white", hole=0.4)
+            fig_stat.update_layout(height=350, margin=dict(t=10, b=10, l=10, r=10), paper_bgcolor='rgba(0,0,0,0)')
+            st.plotly_chart(fig_stat, use_container_width=True)
+        else:
+            st.info("No projects added yet.")
+        st.markdown("</div>", unsafe_allow_html=True)
 
     with tab_projects:
         st.markdown("<div class='glass-card'>", unsafe_allow_html=True)
         st.markdown("### 📈 Project Progress Pipeline")
         if not proj_df.empty and 'PROGRESS' in proj_df.columns:
-            tasks_df = st.session_state.project_tasks_df
             if not tasks_df.empty:
                 active_tasks = tasks_df[tasks_df['STATUS'].isin(['Running', 'Queued'])]
                 if not active_tasks.empty:
@@ -224,11 +233,62 @@ def dashboard_page():
                          text='PROGRESS', hover_data=['STATUS', 'FILE_NAME'],
                          template="plotly_dark" if st.get_option("theme.base") == "dark" else "plotly_white")
             fig1.update_traces(texttemplate='%{text}%', textposition='outside', marker_line_width=1.5, opacity=0.8)
-            fig1.update_layout(yaxis_range=[0, 110], margin=dict(t=30, b=0, l=0, r=0), height=400, plot_bgcolor='rgba(0,0,0,0)', paper_bgcolor='rgba(0,0,0,0)')
+            fig1.update_layout(yaxis_range=[0, 110], margin=dict(t=30, b=0, l=0, r=0), height=350, plot_bgcolor='rgba(0,0,0,0)', paper_bgcolor='rgba(0,0,0,0)')
             st.plotly_chart(fig1, use_container_width=True)
         else:
             st.info("Awaiting project data to generate pipeline view.")
         st.markdown("</div>", unsafe_allow_html=True)
+        
+        c_p1, c_p2 = st.columns(2)
+        with c_p1:
+            st.markdown("<div class='glass-card'>", unsafe_allow_html=True)
+            st.markdown("### 📊 Project Progress Distribution")
+            if not proj_df.empty and 'PROGRESS' in proj_df.columns:
+                fig_hist = px.histogram(proj_df, x='PROGRESS', nbins=10, template="plotly_dark" if st.get_option("theme.base") == "dark" else "plotly_white", color_discrete_sequence=['#10B981'])
+                fig_hist.update_layout(height=300, margin=dict(t=10, b=10, l=10, r=10), paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)')
+                st.plotly_chart(fig_hist, use_container_width=True)
+            st.markdown("</div>", unsafe_allow_html=True)
+            
+        with c_p2:
+            st.markdown("<div class='glass-card'>", unsafe_allow_html=True)
+            st.markdown("### 👥 Team Lead Performance (Avg. Progress)")
+            if not proj_df.empty and 'TEAM_LEAD' in proj_df.columns:
+                lead_df = proj_df.groupby('TEAM_LEAD')['PROGRESS'].mean().reset_index()
+                fig_lead = px.bar(lead_df, x='TEAM_LEAD', y='PROGRESS', text='PROGRESS', template="plotly_dark" if st.get_option("theme.base") == "dark" else "plotly_white", color_discrete_sequence=['#3B82F6'])
+                fig_lead.update_traces(texttemplate='%{text:.1f}%', textposition='outside')
+                fig_lead.update_layout(yaxis_range=[0, 110], height=300, margin=dict(t=10, b=10, l=10, r=10), paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)')
+                st.plotly_chart(fig_lead, use_container_width=True)
+            st.markdown("</div>", unsafe_allow_html=True)
+            
+        c_p3, c_p4 = st.columns(2)
+        with c_p3:
+            st.markdown("<div class='glass-card'>", unsafe_allow_html=True)
+            st.markdown("### 🏢 Projects by Client / Industry")
+            if not proj_df.empty and 'CLIENT' in proj_df.columns:
+                client_df = proj_df['CLIENT'].value_counts().reset_index()
+                client_df.columns = ['Client', 'Count']
+                fig_client = px.pie(client_df, names='Client', values='Count', hole=0.4, template="plotly_dark" if st.get_option("theme.base") == "dark" else "plotly_white")
+                fig_client.update_layout(height=300, margin=dict(t=10, b=10, l=10, r=10), paper_bgcolor='rgba(0,0,0,0)')
+                st.plotly_chart(fig_client, use_container_width=True)
+            st.markdown("</div>", unsafe_allow_html=True)
+            
+        with c_p4:
+            st.markdown("<div class='glass-card'>", unsafe_allow_html=True)
+            st.markdown("### 📅 Monthly Project Start Timeline")
+            if not proj_df.empty and 'START_DATE' in proj_df.columns:
+                temp_df = proj_df.copy()
+                temp_df['START_DATE'] = pd.to_datetime(temp_df['START_DATE'], errors='coerce')
+                temp_df = temp_df.dropna(subset=['START_DATE'])
+                if not temp_df.empty:
+                    temp_df['Month-Year'] = temp_df['START_DATE'].dt.to_period('M').astype(str)
+                    timeline_df = temp_df.groupby('Month-Year').size().reset_index(name='Projects Started')
+                    timeline_df = timeline_df.sort_values('Month-Year')
+                    fig_time = px.line(timeline_df, x='Month-Year', y='Projects Started', markers=True, template="plotly_dark" if st.get_option("theme.base") == "dark" else "plotly_white", color_discrete_sequence=['#8B5CF6'])
+                    fig_time.update_layout(height=300, margin=dict(t=10, b=10, l=10, r=10), paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)')
+                    st.plotly_chart(fig_time, use_container_width=True)
+                else:
+                    st.info("No valid start dates found.")
+            st.markdown("</div>", unsafe_allow_html=True)
         
     with tab_servers:
         col_s1, col_s2 = st.columns(2)
@@ -268,6 +328,40 @@ def dashboard_page():
             else:
                 st.info("Awaiting node data.")
             st.markdown("</div>", unsafe_allow_html=True)
+            
+        st.markdown("<div class='glass-card'>", unsafe_allow_html=True)
+        st.markdown("### ⚙️ Activities/Tasks by Server")
+        if not tasks_df.empty and 'SERVER_USED' in tasks_df.columns:
+            server_task_df = tasks_df[(tasks_df['SERVER_USED'] != 'None') & (tasks_df['SERVER_USED'].notna())]['SERVER_USED'].value_counts().reset_index()
+            server_task_df.columns = ['Server', 'Active Tasks']
+            if not server_task_df.empty:
+                fig_st = px.bar(server_task_df, x='Server', y='Active Tasks', text='Active Tasks', template="plotly_dark" if st.get_option("theme.base") == "dark" else "plotly_white", color_discrete_sequence=['#F59E0B'])
+                fig_st.update_traces(textposition='outside')
+                fig_st.update_layout(height=350, margin=dict(t=10, b=10, l=10, r=10), paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)')
+                st.plotly_chart(fig_st, use_container_width=True)
+            else:
+                st.info("No active tasks currently assigned to any server.")
+        else:
+            st.info("No task data available.")
+        st.markdown("</div>", unsafe_allow_html=True)
+        
+    with tab_team:
+        st.markdown("<div class='glass-card'>", unsafe_allow_html=True)
+        st.markdown("### 🧠 Core Competencies & Skills Distribution")
+        if not stud_df.empty and 'SKILLS' in stud_df.columns:
+            # Extract all comma separated skills into a single list
+            all_skills = stud_df['SKILLS'].dropna().astype(str).str.split(',').explode().str.strip()
+            skills_df = all_skills[all_skills != ''].value_counts().reset_index()
+            skills_df.columns = ['Skill', 'Count']
+            if not skills_df.empty:
+                fig_skills = px.bar(skills_df, x='Skill', y='Count', template="plotly_dark" if st.get_option("theme.base") == "dark" else "plotly_white", color_discrete_sequence=['#10B981'])
+                fig_skills.update_layout(height=400, margin=dict(t=10, b=10, l=10, r=10), paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)')
+                st.plotly_chart(fig_skills, use_container_width=True)
+            else:
+                st.info("No distinct skills logged yet.")
+        else:
+            st.info("No student data available.")
+        st.markdown("</div>", unsafe_allow_html=True)
 
 def project_detail_view(office_name):
     st.markdown(f"### {office_name} Project Management")
