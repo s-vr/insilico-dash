@@ -1,0 +1,6 @@
+STUDENT_ID,NAME,EMAIL,STATUS,SKILLS,ENROLLMENT,OFFICE
+ISO-9A64,Rahul Sharma,rahul@gmail.com,Active,"Python, Docking",2026-01-10,Ooty
+ISO-CE19,Sneha Patel,sneha@gmail.com,Active,"GROMACS, Linux",2026-01-30,Coimbatore
+ISO-3A17,Arun Kumar,arun.k@yahoo.com,Graduated,MD Simulations,2026-03-09,Ooty
+ISO-52F2,Divya R.,divya@univ.edu,Active,Machine Learning,2026-02-14,Coimbatore
+ISO-D149,Karthik N.,knarthik@gmail.com,Active,Cheminformatics,2026-03-06,Ooty

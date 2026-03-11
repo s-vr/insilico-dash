@@ -1,0 +1,6 @@
+PROJECT_ID,TITLE,CLIENT,TEAM_LEAD,STATUS,PROGRESS,START_DATE,END_DATE,COMPUTE_HOURS,OFFICE,NOTES
+PRJ-52803D,Molecular Dynamics 500ns,Biome,Dr. Vivek C.,Active,65,2026-01-31,2026-03-09,120,Ooty,Running smooth
+PRJ-DFBC52,Docking Kinase Inhibitors,PharmaTech,Dr. Priya R.,Active,80,2026-02-18,2026-03-11,45,Coimbatore,Waiting for ligand library
+PRJ-956686,Free Energy Perturbation,Ooty Univ,Mr. John D.,Queued,0,2026-03-10,,0,Ooty,Needs more GPU allocation
+PRJ-51A7B9,Virtual Screening DB,BioSim,Dr. Alice S.,Completed,100,2026-01-11,2026-03-03,400,Coimbatore,Results delivered to client
+PRJ-3471CA,QSAR Analysis of Flavonoids,NatureMed,Dr. Vivek C.,Active,35,2026-03-08,,12,Ooty,Data preprocessing ongoing
