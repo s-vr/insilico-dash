@@ -8,7 +8,8 @@ from datetime import datetime, timedelta
 # Try to import cloud sync if Supabase secrets are set
 try:
     from database_sync import load_data, save_record, delete_record
-    HAS_SUPABASE = "SUPABASE_URL" in st.secrets
+    # In Streamlit, secrets are accessed via st.secrets
+    HAS_SUPABASE = "SUPABASE_URL" in st.secrets and "SUPABASE_KEY" in st.secrets
 except:
     HAS_SUPABASE = False
 
@@ -21,6 +22,7 @@ project_tasks_cols = {'TASK_ID': 'str', 'PROJECT_ID': 'str', 'FILE_NAME': 'str',
 students_cols = {'STUDENT_ID': 'str', 'NAME': 'str', 'EMAIL': 'str', 'STATUS': 'str', 'SKILLS': 'str', 'OFFICE': 'str'}
 team_cols = {'MEMBER_ID': 'str', 'NAME': 'str', 'EMAIL': 'str', 'ROLE': 'str', 'EXPERTISE': 'str'}
 servers_cols = {'SERVER_NAME': 'str', 'IP_ADDRESS': 'str', 'GPU_SPECS': 'str', 'CURRENT_USER': 'str', 'STATUS': 'str', 'LOAD_PERCENT': 'int'}
+attendance_cols = {'DATE': 'object', 'NAME': 'str', 'ROLE_TYPE': 'str', 'OFFICE': 'str', 'STATUS': 'str'}
 
 def save_df(df, filename):
     # Local Save (Backup)
@@ -31,33 +33,54 @@ def save_df(df, filename):
     if HAS_SUPABASE:
         try:
             # Table Map
-            table_map = {'projects': 'projects', 'project_tasks': 'tasks', 'students': 'students', 'team': 'team', 'servers': 'servers'}
+            table_map = {
+                'projects': 'projects', 
+                'project_tasks': 'tasks', 
+                'students': 'students', 
+                'team': 'team', 
+                'servers': 'servers',
+                'attendance': 'attendance'
+            }
             table_name = table_map.get(filename, filename)
             
             # Convert to records and lowercase keys for Postgres
             records = df.to_dict(orient='records')
             for r in records:
-                db_record = {k.lower(): v for k, v in r.items() if str(v) != 'nan'}
-                # Simple upsert logic: try to save latest state
-                # In real scenario we'd use id to upsert
+                # Filter out NaN and convert to compatible types
+                db_record = {}
+                for k, v in r.items():
+                    val = v
+                    if pd.isna(v): val = None
+                    db_record[k.lower()] = val
+                
+                # Push to Supabase
                 save_record(table_name, db_record)
         except Exception as e:
-            st.error(f"Cloud Save Error: {e}")
+            # Silently log to streamlit for debugging if needed
+            print(f"Cloud Sync Error: {e}")
 
 def load_or_create(filename, schema_cols, generator_func):
     if HAS_SUPABASE:
         try:
-            table_map = {'projects': 'projects', 'project_tasks': 'tasks', 'students': 'students', 'team': 'team', 'servers': 'servers'}
+            table_map = {
+                'projects': 'projects', 
+                'project_tasks': 'tasks', 
+                'students': 'students', 
+                'team': 'team', 
+                'servers': 'servers',
+                'attendance': 'attendance'
+            }
             table_name = table_map.get(filename, filename)
             data = load_data(table_name)
             if data and len(data) > 0:
                 df = pd.DataFrame(data)
                 df.columns = [c.upper() for c in df.columns]
-                # Filter to expected columns only
-                df = df[[c for c in schema_cols.keys() if c in df.columns]]
+                # Filter to expected columns and ensure types
+                existing_cols = [c for c in schema_cols.keys() if c in df.columns]
+                df = df[existing_cols]
                 return df
         except Exception as e:
-            st.warning(f"Cloud load failed ({e}). Falling back to local.")
+            print(f"Cloud load failed ({e}). Falling back to local.")
 
     filepath = os.path.join(DATA_DIR, f"{filename}.csv")
     if os.path.exists(filepath):
@@ -75,12 +98,13 @@ def load_or_create(filename, schema_cols, generator_func):
         save_df(df, filename)
         return df
 
-# Generators (Initial Data if both Cloud and Local are empty)
+# Generators
 def generate_projects(): return pd.DataFrame(columns=projects_cols.keys())
 def generate_servers(): return pd.DataFrame(columns=servers_cols.keys())
 def generate_tasks(): return pd.DataFrame(columns=project_tasks_cols.keys())
 def generate_students(): return pd.DataFrame(columns=students_cols.keys())
 def generate_team(): return pd.DataFrame(columns=team_cols.keys())
+def generate_attendance(): return pd.DataFrame(columns=attendance_cols.keys())
 
 # Getters
 def get_projects_df(): return load_or_create('projects', projects_cols, generate_projects)
@@ -88,3 +112,4 @@ def get_servers_df(): return load_or_create('servers', servers_cols, generate_se
 def get_project_tasks_df(): return load_or_create('project_tasks', project_tasks_cols, generate_tasks)
 def get_students_df(): return load_or_create('students', students_cols, generate_students)
 def get_team_df(): return load_or_create('team', team_cols, generate_team)
+def get_attendance_df(): return load_or_create('attendance', attendance_cols, generate_attendance)
