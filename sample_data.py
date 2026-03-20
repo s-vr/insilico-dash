@@ -45,13 +45,47 @@ def load_or_create(filename, schema_cols, generator_func):
 
 # Generators
 def generate_projects():
-    data = [
-        [f"PRJ-{uuid.uuid4().hex[:6].upper()}", "Molecular Dynamics 500ns", "Biome", "Dr. Vivek C.", "Active", 65, random_date(60), random_date(10), 120, "Ooty", "Running smooth"],
-        [f"PRJ-{uuid.uuid4().hex[:6].upper()}", "Docking Kinase Inhibitors", "PharmaTech", "Dr. Priya R.", "Active", 80, random_date(40), random_date(5), 45, "Coimbatore", "Waiting for ligand library"],
-        [f"PRJ-{uuid.uuid4().hex[:6].upper()}", "Free Energy Perturbation", "Ooty Univ", "Mr. John D.", "Queued", 0, random_date(5), "", 0, "Ooty", "Needs more GPU allocation"],
-        [f"PRJ-{uuid.uuid4().hex[:6].upper()}", "Virtual Screening DB", "BioSim", "Dr. Alice S.", "Completed", 100, random_date(120), random_date(20), 400, "Coimbatore", "Results delivered to client"],
-        [f"PRJ-{uuid.uuid4().hex[:6].upper()}", "QSAR Analysis of Flavonoids", "NatureMed", "Dr. Vivek C.", "Active", 35, random_date(15), "", 12, "Ooty", "Data preprocessing ongoing"]
+    data = []
+    clients = ["Biome", "PharmaTech", "Ooty Univ", "BioSim", "NatureMed", "GenoCorp", "CellTech", "ViroSolve"]
+    leads = ["Dr. Vivek C.", "Dr. Priya R.", "Mr. John D.", "Dr. Alice S.", "Dr. Kumar M."]
+    offices = ["Ooty", "Coimbatore"]
+    statuses = ["Active", "Active", "Active", "Queued", "Completed", "On Hold"]
+    titles = [
+        "Network Pharmacology, molecular docking and toxicity analysis using SwissADME",
+        "TNBC Project",
+        "Sumetha-SIET",
+        "Dual Dockign and Dynamics [100ns] - MMP9 [4XCT]",
+        "Virtual Screening DB", "QSAR Analysis of Flavonoids", "Protein Folding Simulation",
+        "Ligand Binding Affinity", "RNA Seq Analysis", "CRISPR Target Prediction"
     ]
+    
+    # Specific records from screenshot
+    screenshot_data = [
+        ["PRJ-8E350ED1", "Network Pharmacology, molecular docking and toxicity analysis using SwissADME", "Swetha G", "Dr. Vivek C.", "Completed", 100, "2026-02-01", "2026-02-15", 450, "Coimbatore", "Excellent results"],
+        ["PRJ-FA7BCFD8", "TNBC Project", "Dr. George", "Dr. Priya R.", "Active", 75, "2026-02-05", "", 200, "Coimbatore", "In progress"],
+        ["PRJ-E477AD12", "Sumetha-SIET", "Ms. Sumnetha", "Dr. Vivek C.", "Completed", 100, "2026-02-10", "2026-02-20", 300, "Coimbatore", "Finalized"],
+        ["PRJ-DD5CB96F", "Dual Dockign and Dynamics [100ns] - MMP9 [4XCT]", "Ms. Madhumitha", "Dr. Vivek C.", "Completed", 100, "2026-02-12", "2026-02-25", 600, "Coimbatore", "Simulation stable"]
+    ]
+    
+    for row in screenshot_data:
+        data.append(row)
+
+    for i in range(26):
+        status = random.choice(statuses)
+        progress = 100 if status == "Completed" else (0 if status == "Queued" else random.choice([25, 50, 75]))
+        data.append([
+            f"PRJ-{uuid.uuid4().hex[:6].upper()}", 
+            f"{random.choice(titles)} {i}", 
+            random.choice(clients), 
+            random.choice(leads), 
+            status, 
+            progress, 
+            random_date(120), 
+            random_date(10) if status == "Completed" else "", 
+            random.randint(50, 1000), 
+            random.choice(offices), 
+            "Routine analysis"
+        ])
     return pd.DataFrame(data, columns=projects_cols.keys())
 
 def generate_servers():
