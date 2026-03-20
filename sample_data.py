@@ -56,8 +56,7 @@ def save_df(df, filename):
                 # Push to Supabase
                 save_record(table_name, db_record)
         except Exception as e:
-            # Silently log to streamlit for debugging if needed
-            print(f"Cloud Sync Error: {e}")
+            st.error(f"Cloud Sync Error ({table_name}): {e}")
 
 def load_or_create(filename, schema_cols, generator_func):
     if HAS_SUPABASE:

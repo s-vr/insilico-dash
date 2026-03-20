@@ -1216,7 +1216,7 @@ def attendance_page():
     with st.form("quick_attendance"):
         st.markdown("#### Students")
         student_status = {}
-        for s in students:
+        for i, s in enumerate(students):
             col1, col2 = st.columns([1, 3])
             with col1:
                 st.write(f"**{s}**")
@@ -1225,7 +1225,7 @@ def attendance_page():
                 
         st.markdown("#### Core Team")
         team_status = {}
-        for t in team:
+        for i, t in enumerate(team):
             col1, col2 = st.columns([1, 3])
             with col1:
                 st.write(f"**{t}**")
