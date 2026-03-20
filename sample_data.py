@@ -40,7 +40,8 @@ def save_df(df, filename):
                 db_record = {}
                 for k, v in r.items():
                     val = v
-                    if pd.isna(v): val = None
+                    if pd.isna(v) or v == "": 
+                        val = None
                     elif k.upper() in ['PROGRESS', 'COMPUTE_HOURS', 'LOAD_PERCENT']:
                         try: val = int(float(v))
                         except: val = 0

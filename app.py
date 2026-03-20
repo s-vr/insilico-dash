@@ -764,7 +764,8 @@ def create_project_form(office_name):
                     'START_DATE': start_date.strftime("%Y-%m-%d"),
                     'END_DATE': end_date.strftime("%Y-%m-%d") if end_date else "",
                     'NOTES': description,
-                    'OFFICE': office.split()[0]
+                    'OFFICE': office.split()[0],
+                    'COMPUTE_HOURS': 0
                 }])
                 new_df = pd.concat([new_row, st.session_state.projects_df], ignore_index=True)
                 update_state_and_save('projects_df', new_df, 'projects')
@@ -1221,7 +1222,7 @@ def attendance_page():
             with col1:
                 st.write(f"**{s}**")
             with col2:
-                student_status[s] = st.radio("Status", ["Present", "Absent", "Leave", "WFH"], key=f"s_{s}", horizontal=True, label_visibility="collapsed")
+                student_status[s] = st.radio("Status", ["Present", "Absent", "Leave", "WFH"], key=f"s_att_{i}_{s}", horizontal=True, label_visibility="collapsed")
                 
         st.markdown("#### Core Team")
         team_status = {}
@@ -1230,7 +1231,7 @@ def attendance_page():
             with col1:
                 st.write(f"**{t}**")
             with col2:
-                team_status[t] = st.radio("Status", ["Present", "Absent", "Leave", "WFH"], key=f"t_{t}", horizontal=True, label_visibility="collapsed")
+                team_status[t] = st.radio("Status", ["Present", "Absent", "Leave", "WFH"], key=f"t_att_{i}_{t}", horizontal=True, label_visibility="collapsed")
         
         if st.form_submit_button("💾 Save Today's Attendance", use_container_width=True):
             new_records = []
