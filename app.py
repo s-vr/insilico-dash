@@ -238,6 +238,18 @@ def render_sidebar():
     with st.sidebar:
         st.markdown(f"<h1 class='gradient-text' style='text-align:center; font-size: 2.2rem !important; text-shadow: 0 0 20px rgba(16,185,129,0.3);'>🧪 INSILICOMICS</h1>", unsafe_allow_html=True)
         st.markdown("<hr style='margin-top:0;'>", unsafe_allow_html=True)
+
+        # Connection Status Indicator
+        import sample_data
+        is_cloud = getattr(sample_data, 'HAS_SUPABASE', False)
+        status_color = "#10B981" if is_cloud else "#94a3b8"
+        status_text = "☁️ CLOUD SYNC: ACTIVE" if is_cloud else "📂 LOCAL STORAGE"
+        st.markdown(f"""
+            <div style='text-align:center; padding:5px; border-radius:10px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.05); margin-bottom:20px;'>
+                <small style='color:{status_color}; font-weight:800; letter-spacing:0.1em;'>{status_text}</small>
+            </div>
+        """, unsafe_allow_html=True)
+
         
         pages = {
             "Bio-Games Hub": "🎮",
