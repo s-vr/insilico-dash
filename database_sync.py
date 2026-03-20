@@ -13,7 +13,8 @@ def load_data(table_name):
 
 def save_record(table_name, record):
     supabase = get_supabase()
-    supabase.table(table_name).insert(record).execute()
+    # Using upsert to handle both insert and update
+    supabase.table(table_name).upsert(record).execute()
 
 def delete_record(table_name, id_col, id_val):
     supabase = get_supabase()
