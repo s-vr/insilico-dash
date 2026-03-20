@@ -11,10 +11,12 @@ def load_data(table_name):
     response = supabase.table(table_name).select("*").execute()
     return response.data
 
-def save_record(table_name, record):
+def save_record(table_name, record, on_conflict=None):
     supabase = get_supabase()
-    # Using upsert to handle both insert and update
-    supabase.table(table_name).upsert(record).execute()
+    if on_conflict:
+        supabase.table(table_name).upsert(record, on_conflict=on_conflict).execute()
+    else:
+        supabase.table(table_name).upsert(record).execute()
 
 def delete_record(table_name, id_col, id_val):
     supabase = get_supabase()
